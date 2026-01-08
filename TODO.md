@@ -67,8 +67,9 @@ We will simulate federation by splitting the data, assuming that patients are ei
 We will split the `n=177` datapoints into 4 buckets:
 1. IDs for hospital $X$
 2. IDs for hospital $Y$
-4. validation data between federated learning rounds
-5. test data for the final evaluation
+3. validation data between federated learning rounds (global validation)
+4. test data for the final evaluation
+Future work could use the subsets for hospital $X$ and hospital $Y$ could also do a validation holdout, but this is unnecessary complexity out of scope for the hackathon.
 
 
 ## Fusion Model Architecture
