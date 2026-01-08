@@ -40,7 +40,7 @@ We decided to go with the data for the [CHIMERA Challenge](https://registry.open
 > Combining HIstology, Medical imaging (radiology) and molEcular data for medical pRognosis and diAgnosis
 Details for the challenge are [here](https://chimera.grand-challenge.org/).
 
-The data contains histopathology, RNA sequencing along with patient's clinical data. 
+The CHIMERA dataset contains histopathology and RNA sequencing along with patients' clinical data. 
 
 
 *author's note, what a forced acronym :-)*
