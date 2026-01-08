@@ -1,6 +1,10 @@
 import torch
 import torch.nn as nn
 
+# TODO: import the subnets from embed{CD, HE, RNA}
+# the network here should provide sub-dimensions for each subnet
+# as an init parameter. This is set at the global level.
+
 class SimpleNetwork(nn.Module):
     def __init__(self, rna_dim=19359, clinical_dim=13, risk_output_dim=1):
         super().__init__()
