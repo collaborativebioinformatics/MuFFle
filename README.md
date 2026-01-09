@@ -14,6 +14,7 @@
 10. Mahtabin Rodela 
 11. Yajushi Khurana
 
+![flowchart](figures/flowchart.png)
 
 ## Quick Start
 The Memphis/San-Diego example workflow is contained in `src/`. We will provide instructions for `.venv/` setup; you can use `conda`, `PyEnv`, or any other Python environment manager if you'd like.
@@ -34,8 +35,6 @@ Now go into `src/multi-client-sim.py` and change the `DATASET_PATH` variable to 
 You can now run the jupyter notebook `src/prf-of-concept.ipynb`! 
 
 Logs for tensorboard are stored in `/tmp/nvflare/simulation/MEM_SAN_FedCollab/server/simulate_job/tb_events/`. More instructions are in the jupyter notebook `src/prf-of-concept.ipynb`.
-
-<!-- ![flowchart](figures/flowchart.png) -->
 
 # Introduction
 MuFFLe is a privacy-preserving framework for integrating multimodal biomedical data (RNA sequencing, clinical features) for cancer prognosis. Using NVIDIA's NVFlare, each hospital site trains on its local data and shares only model updates—not raw patient data—with a central server for aggregation.
