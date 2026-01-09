@@ -4,7 +4,7 @@
 ## Contributors
 1. Tyler Yang
 2. Shreyan Nalwad
-3. Varalakshmi Perumal
+3. Varalakshmi Perumal (https://orcid.org/0000-0002-8293-2308)
 4. Anna Boeva
 5. James Mu
 6. Amrit Gaire
