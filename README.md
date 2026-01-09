@@ -1,4 +1,4 @@
-# ![MuFFLe Logo](figures/muffle-logo.png) Multimodal Framework for Federated Learning (MuFFLe)
+# ![MuFFLe Logo](figures/muffle-logo-banner.png) Multimodal Framework for Federated Learning (MuFFLe)
 
 ## TODO List + References:
 - [X] Reference previous years' repos as inspo for this GitHub repo
