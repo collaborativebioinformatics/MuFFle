@@ -1,6 +1,21 @@
-# ![MuFFLe Logo](figures/muffle-logo-banner.png) Multimodal Framework for Federated Learning (MuFFLe)
+# Multimodal Framework for Federated Learning (MuFFLe)
+![MuFFLe Logo](figures/muffle-logo-banner.png) 
 
-# Quick Start
+## Contributors
+1. Tyler Yang
+2. Shreyan Nalwad
+3. Varalakshmi Perumal
+4. Anna Boeva
+5. James Mu
+6. Amrit Gaire
+7. Zhenghao (Chester) Xiao
+8. Yiman Wu
+9. Jon Moller
+10. Mahtabin Rodela 
+11. Yajushi Khurana
+
+
+## Quick Start
 The Memphis/San-Diego example workflow is contained in `src/`. We will provide instructions for `.venv/` setup; you can use `conda`, `PyEnv`, or any other Python environment manager if you'd like.
 ```bash
 python3 -m venv .venv       # create your environment
