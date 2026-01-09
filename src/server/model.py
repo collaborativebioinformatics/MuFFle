@@ -15,77 +15,85 @@ class FusionNet(nn.Module):
             self,
             rna_in_dim=19359,
             clinical_in_dim=14, 
-            embedding_dim=512,
-            gate=True, 
+            embedding_dim=512, # Target dim for RNA embedding
             dropout_CD=0.3,
             dropout_RNA=0.3
         ):
         super().__init__()
-        self.gate = gate
 
-        # === RNA embedding branch with configurable dropout ===
-        self.rna_out_dim = embedding_dim - clinical_in_dim
+        # === 1. Embeddings ===
+        # RNA Branch
+        self.rna_out_dim = embedding_dim 
         self.rna_embedding = RNANet(
             in_dim=rna_in_dim, 
             out_dim=self.rna_out_dim, 
             dropout_p=dropout_RNA
         )
 
-        # === Clinical branch with LayerNorm (safe for batch size = 1) ===
-        # TODO: why batch size = 1?
+        # Clinical Branch
+        # Note: CDNet output is hardcoded to 512 in embedCD.py
         self.tabular_net = CDNet(
             in_dim=clinical_in_dim, 
-            dropout_p=0.3
+            dropout_p=dropout_CD
         )
 
-        # Interpretable per-modality importance weights
-        # TODO: use nn.Parameter to create importance weights
-        
-        # Attention backbone
-        self.attention = nn.Linear(512, 1)
-
-        # === Safe dummy forward to get output dimension ===
+        # Determine Clinical Output Dimension dynamically
         with torch.no_grad():
-            self.tabular_net.eval()  # prevent any norm layers from training stats
+            self.tabular_net.eval()
             dummy_input = torch.zeros(1, clinical_in_dim)
-            clinical_out_dim = self.tabular_net(dummy_input).shape[1]
+            self.clinical_out_dim = self.tabular_net(dummy_input).shape[1]
             self.tabular_net.train()
 
-        # === Fusion (binary) classifier ===
-        self.classifier = nn.Linear(512 + clinical_out_dim, 1)
+        # === 2. Interpretable Weights Per-Modality ===
+        # Learnable scalar weights, initialized to 1.0
+        self.w_rna = nn.Parameter(torch.tensor(1.0))
+        self.w_clinical = nn.Parameter(torch.tensor(1.0))
+        
+        # === 4. Attention Backbone ===
+        # "Learn what parts of the embedding are most important"
+        # We use a Gating mechanism (Sigmoid) effectively acting as feature attention
+        fusion_dim = self.rna_out_dim + self.clinical_out_dim
+        self.attention_backbone = nn.Sequential(
+            nn.Linear(fusion_dim, fusion_dim),
+            nn.Sigmoid() 
+        )
+
+        # === 5. Classifier ===
+        self.classifier = nn.Linear(fusion_dim, 1)
 
     def forward(self, x_clinical, x_rna=None):
         
-        if x_rna is not None:
-            # RNA embedding
-            h = self.rna_embedding(x_rna)
-            a = torch.softmax(self.attention(h), dim=1)
-            z = torch.sum(a * h, dim=1)
-        else:
-            B = x_clinical.shape[0]
-            z = torch.zeros((B, self.rna_out_dim))
-
-        # Clinical embedding
+        # --- Level 1: Embeddings ---
+        # Clinical
         z_tab = self.tabular_net(x_clinical)
 
-        # TODO: apply per-modality importance weights
+        # RNA (Handle missing modality)
+        if x_rna is not None:
+            z_rna = self.rna_embedding(x_rna)
+        else:
+            # Create zeros on the correct device
+            z_rna = torch.zeros(
+                (x_clinical.shape[0], self.rna_out_dim), 
+                device=x_clinical.device
+            )
 
-        # Fusion
-        z_fusion = torch.cat((z, z_tab), dim=-1)
+        # --- Level 2: Per-Modality Weights ---
+        z_rna = z_rna * self.w_rna
+        z_tab = z_tab * self.w_clinical
 
-        # TODO: apply attention backbone
+        # --- Level 3: Concatenation ---
+        z_fusion = torch.cat((z_rna, z_tab), dim=-1)
 
-        # Optional gating
-        if self.gate:
-            z_tab = 0.5 * z_tab  # less aggressive scaling than 0.2
-        
-        logits = self.classifier(z_fusion)
+        # --- Level 4: Attention Backbone ---
+        # Reweight the fused vector based on feature importance
+        attention_weights = self.attention_backbone(z_fusion)
+        z_attended = z_fusion * attention_weights
 
-        return {'logits': logits, 'loss': None, 'attention': a}
+        # --- Level 5: Prediction ---
+        logits = self.classifier(z_attended)
 
-    def attention_entropy_loss(self, attention_weights):
-        """Optional regularization to avoid overconfident attention."""
-        entropy = -torch.mean(
-            torch.sum(attention_weights * torch.log(attention_weights + 1e-6), dim=1)
-        )
-        return entropy
+        return {
+            'logits': logits, 
+            'modality_weights': {'rna': self.w_rna, 'clinical': self.w_clinical},
+            'attention_weights': attention_weights
+        }
