@@ -79,8 +79,6 @@ We adapt the diagram from [CHIMERA Task 3](https://chimera.grand-challenge.org/t
 
 ![Adapted from CHIMERA Task 3](figures/chimera-task-3-adapted.png)
 
-### Federation + Data Splits
-We will simulate federation by splitting the data, assuming that patients are either from hospital $X$ or hospital $Y$.
 
 ## Fusion Model Architecture
 We will explain each part of the diagram below:
@@ -92,6 +90,10 @@ Each data modality needs to be embedded in some way. An example might be:
 - Images can use a pretrained CNN,
 - RNASeq can use some sort of MLP
 - Clinical Data can also use some sort of MLP
+
+For the proof-of-concept, we will use the encoder from a simple linear autoencoder to generate embeddings for the clinical data. At each round of federated learning, each client will perform
+1. *local* training the autoencoder 
+2. *federated* training the global fusion model
 
 ### Level 2: Interpretable + Learnable Weights Per-Modality
 We create a learnable layer that gives an easily-interpreted weight, or importance score, to each modality's embedding.
