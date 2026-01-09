@@ -1,5 +1,25 @@
 # ![MuFFLe Logo](figures/muffle-logo-banner.png) Multimodal Framework for Federated Learning (MuFFLe)
 
+# Quick Start
+The Memphis/San-Diego example workflow is contained in `src/`. We will provide instructions for `.venv/` setup; you can use `conda`, `PyEnv`, or any other Python environment manager if you'd like.
+```bash
+python3 -m venv .venv       # create your environment
+source .venv/bin/activate   # activate it
+pip install "nvflare[PT]" torchinfo tensorboard matplotlib jupyter ipykernel # install necessary packages
+```
+Now we need to get the RNA-sequencing data and clinical data from [CHIMERA Task 3](https://chimera.grand-challenge.org/task-3-bladder-cancer-recurrence-prediction/). Make sure you have AWS CLI installed (e.g., via Homebrew on MacOS).
+```bash
+# List files
+aws s3 ls --no-sign-request s3://chimera-challenge/v2/task3/data/3A_001/
+# Copy all the Clinical Data and RNASeq Data
+aws s3 cp --no-sign-request s3://chimera-challenge/v2/task3/data/ local/path/to/data/ --recursive --exclude "*" --include "*.json"
+```
+Now go into `src/multi-client-sim.py` and change the `DATASET_PATH` variable to wherever you downloaded the data.
+
+You can now run the jupyter notebook `src/prf-of-concept.ipynb`! 
+
+Logs for tensorboard are stored in `/tmp/nvflare/simulation/MEM_SAN_FedCollab/server/simulate_job/tb_events/`. More instructions are in the jupyter notebook `src/prf-of-concept.ipynb`.
+
 ## TODO List + References:
 - [X] Reference previous years' repos as inspo for this GitHub repo
   - [GeneVar2](https://github.com/collaborativebioinformatics/GeneVar2), a little *too* good because it was a 2nd followup project
@@ -16,18 +36,6 @@
 
 ![flowchart](figures/flowchart.png)
 
-# Quick Start
-```bash
-# create a Python virtual environment (I used .venv, use conda or wtv you want)
-source .venv/bin/activate # or however you activate your Python virtual environments.
-# Install PyTorch optional dependencies
-# should also install torch and other necessary packages
-pip install "nvflare[PT]" torchinfo tensorboard matplotlib jupyter ipykernel
-```
-Run the jupyter notebook `prf-of-concept.ipynb`. This was built by extending the "Hello PyTorch" example from NVFlare (`hello-pt`) and modifying the clients such that each client only provided one modality of data (in the simple test, RNA for one client, Clinical Data for the other) and updates were done independently on both clients and aggregated on the server.
-
-# Directory Structure
-- [ ] Generate with Tree
 
 # Introduction (1 para)
 MuFFLe is a privacy-preserving framework for integrating multimodal biomedical data (RNA sequencing, clinical features) for cancer prognosis. Using NVIDIA's NVFlare, each hospital site trains on its local data and shares only model updates—not raw patient data—with a central server for aggregation.
