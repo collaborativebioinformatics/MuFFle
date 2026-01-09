@@ -63,12 +63,12 @@ def update_model(
             clinical_data, labels = batch[0].to(device), batch[1].to(device)
             optimizer.zero_grad()
 
-            predictions = model(clinical_data, None)
-            cost = loss(predictions, labels)
+            output = model(clinical_data, None)
+            cost = loss(output['logits'], labels)
             cost.backward()
             optimizer.step()
 
-            print(f"[{epoch + 1}, {i + 1:5d}] loss: {cost.item()}")
+            print(f"[{epoch + 1}, {i + 1:5d}] loss: {cost.item()}, modality_weights: {output['modality_weights']}")
             # Optional: Log metrics
             global_step = current_round * steps + epoch * len(CDloader) + i 
             summary_writer.add_scalar(tag="loss", scalar=cost.item(), global_step=global_step)

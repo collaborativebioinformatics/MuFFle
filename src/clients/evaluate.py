@@ -22,34 +22,39 @@ def load_eval_data(dataset_path):
 
     CDloader = torch.utils.data.DataLoader(
         clinical_ds, 
-        batch_size=1, 
+        batch_size=26, 
         shuffle=True,
         collate_fn=clinical_collate_fn
     )
 
     RNAloader = torch.utils.data.DataLoader(
         rna_ds, 
-        batch_size=1, 
+        batch_size=26, 
         shuffle=True
     )
 
     return CDloader, RNAloader
 
-def evaluate(net, CDloader, RNAloader, device):
+def evaluate(model, CDloader, RNAloader, device):
     correct = 0
     total = 0
     # since we're not training, we don't need to calculate the gradients for our outputs
     with torch.no_grad():
-        for data in data_loader:
+        for((clinical_data, progression_labels), rnaseq_data) in zip(CDloader, RNAloader):
             # (optional) use GPU to speed things up
-            clinical, rnaseq, labels = data.to(device)
-            outputs = net(clinical, rnaseq)
+            clinical_data = clinical_data.to(device)
+            progression_labels = progression_labels.to(device)
+            rnaseq_data = rnaseq_data.to(device)
+            output = model(clinical_data, rnaseq_data)
 
-            _, predicted = torch.max(outputs.data, 1)
-            total += labels.size(0)
-            correct += (predicted == labels).sum().item()
+            probabilities = torch.sigmoid(output['logits'])
+            binary_predictions_fast = (output['logits'] > 0).int()
 
-        print(f"Accuracy of the network on the 26 test subjects from Cohort A: {100 * correct // total} %")
+            total += progression_labels.size(0)
+            correct += (binary_predictions_fast == progression_labels).sum().item()
+            print(f"Probabilities: {probabilities}")
+            print(f"Accuracy of the network on the 26 test subjects from Cohort A: {100 * correct // total} %")
+            break
     return 100 * correct // total
     
 

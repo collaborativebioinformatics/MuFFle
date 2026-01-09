@@ -81,12 +81,12 @@ def update_model(
 
             optimizer.zero_grad()
 
-            predictions = model(clinical_data, rnaseq_data)
-            cost = loss(predictions, progression_labels)
+            output = model(clinical_data, rnaseq_data)
+            cost = loss(output['logits'], progression_labels)
             cost.backward()
             optimizer.step()
 
-            print(f"[{epoch + 1}, {i + 1:5d}] loss: {cost.item()}")
+            print(f"[{epoch + 1}, {i + 1:5d}] loss: {cost.item()}, modality_weights: {output['modality_weights']}")
             # Optional: Log metrics
             global_step = current_round * steps + epoch * len(CDloader) + i 
             summary_writer.add_scalar(tag="loss", scalar=cost.item(), global_step=global_step)
