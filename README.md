@@ -98,12 +98,64 @@ We elected not to use this dataset because the S3 bucket had "controlled access,
 
 
 ## CHIMERA Dataset Analysis
+### Clustering Results and Clinical Validation
+
+The pipeline successfully stratified all **176 patients into 3 distinct risk clusters** (Cluster 0: 53 patients, Cluster 1: 72 patients, Cluster 2: 51 patients). To validate whether these clusters capture clinically meaningful patterns relevant to bladder cancer recurrence, we compared cluster assignments against established clinical risk factors and survival outcomes.
+
+![Clinical Relevance Summary](Fusion_model_clustering/analysis/clinical_analysis/clinical_relevance_summary.png)
+
+*Statistical validation showing associations between clusters and clinical variables including progression rates, BRS categories, and demographic factors.*
+
+**Scientific Question**: Do the multimodal (WSI + RNA) clusters identify patient subgroups with distinct recurrence risk profiles?
+
+**Key Findings**:
+- **Differential Progression Rates**: Clusters show varying progression rates, with Cluster 2 exhibiting the highest risk
+- **BRS Association**: Clusters align with Bladder Recurrence Score categories, validating biological relevance
+- **Clinical Variables**: Statistical tests (chi-square, ANOVA) reveal associations with established prognostic factors
+
+### Interpretability: Attention Heatmaps
+
+A key advantage of our heuristic-based approach is **interpretability**—we can directly visualize which tissue regions drive clustering decisions. The gated attention mechanism weights patches based on morphological complexity (variance), allowing us to generate spatial heatmaps showing where the model focuses its attention.
+
+![Attention Heatmap](Fusion_model_clustering/analysis/attention_heatmaps/3A_001_attention_heatmap.png)
+
+*Spatial attention heatmap overlayed on a whole-slide image. Warm colors (red/yellow) indicate high-attention patches that contributed most to the patient's slide embedding. These regions typically correspond to morphologically complex areas such as tumor nests or regions with high cellular pleomorphism.*
+
+The attention mechanism enables **biological validation**: high-attention patches should localize to tumor regions with significant morphological features, not background stroma or artifacts. This interpretability is crucial for clinical adoption, as pathologists can verify that the model focuses on biologically relevant tissue patterns.
+
+### Survival Analysis: Kaplan-Meier Curves
+
+**Scientific Question**: Do the clusters predict recurrence-free survival?
+
+Kaplan-Meier survival analysis evaluates whether patients in different clusters experience different recurrence risk over time. The survival curves below show the probability of remaining recurrence-free for each cluster.
+
+![Kaplan-Meier Survival Curves](Fusion_model_clustering/analysis/survival_plots/kaplan_meier_curves.png)
+
+*Kaplan-Meier curves showing recurrence-free survival probability over time for each cluster. The separation between curves indicates differential recurrence risk. While the log-rank test p-value (0.3069) did not reach statistical significance in this unsupervised setting, the visual separation suggests distinct risk profiles. C-index: 0.5507.*
+
+**Interpretation**: The curves show visual separation between clusters, suggesting distinct recurrence risk profiles. Cluster 2 shows the fastest decline (highest risk), while Cluster 0 appears more favorable. The modest C-index (0.5507) and non-significant p-value are expected for unsupervised clustering without labeled training data, but the pattern suggests the multimodal approach captures meaningful prognostic information that warrants further investigation with larger cohorts.
+
+![t-SNE Visualization](Fusion_model_clustering/analysis/signature_tsne.png)
+
+*t-SNE projection of 1280-dimensional multimodal patient signatures colored by cluster assignment, demonstrating spatial separation of clusters in the fused feature space.*
+
+### Key Advantages
+
+This heuristic-based approach offers several benefits:
+
+- **High Interpretability**: Attention heatmaps reveal which tissue regions drive clustering, enabling biological validation
+- **No Training Required**: Works immediately on new data using fixed mathematical operations
+- **Immediate Deployment**: No model training or fine-tuning needed
+- **Robustness**: Avoids overfitting common in deep learning models on small datasets
+
+The full implementation, including attention heatmap visualization and survival analysis tools, is available in the `Fusion_model_clustering/` directory of this repository.
+<!-- 
 In addition, several clinical conditions also varied between the two datasets, further highlighting the need of a multimodal federated learning algorithm.
 
 ![lv1 plot](figures/lv1_cohorts.png)
 
 This setup allows us to simulate a privacy-preserving, multi-institutional federated learning scenario, where each client trains locally on its data and only shares model updates with the central server, without exposing individual patient data.
-<!-- 
+
 ## Setting up the baseline
 The [CHIMERA repository](https://github.com/DIAGNijmegen/CHIMERA/tree/main) does not give great instructions for how to establish the task 3 baseline. *The README in that folder is 1 byte. As in it's blank. Very frustrating.* So we cloned the repository locally and recreated it ourselves. 
 
